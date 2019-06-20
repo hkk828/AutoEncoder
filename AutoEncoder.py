@@ -26,7 +26,7 @@ train_sampler = SubsetRandomSampler(list(range(5000, 60000)))
 valid_sampler = SubsetRandomSampler(list(range(5000)))
 
 train_data = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler, num_workers=1, pin_memory=True) # shuffle=True -> data reshuffled after each epoch
-valid_data = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler, num_workers=1, pin_memory=True)
+valid_data = DataLoader(train_dataset, batch_size=5000, sampler=valid_sampler, num_workers=1, pin_memory=True)
 test_data = DataLoader(test_dataset, batch_size=10000, num_workers=1, pin_memory=True, shuffle=True)
 
 # Now we define our own Auto Encoder class
@@ -68,6 +68,7 @@ optimizer = torch.optim.Adam(Auto_Encoder.parameters()) # Adam finds its own lea
 # Train our Auto Encoder
 num_epoch = 20  # 1 epoch = uses all data points once
 validation_criterion = 1 # criterion for validation (It will be updated to have less cost through the training)
+best_network = None
 
 for epoch in range(num_epoch):
     for data in train_data:
@@ -98,9 +99,10 @@ for epoch in range(num_epoch):
 
     print("epoch [{}/{}], validation loss: {:.4f}".format(epoch+1, num_epoch, cost_valid.data))
 
-    if cost_valid < validation_criterion:
+    if cost_valid <= validation_criterion:
         validation_criterion = cost_valid
-        torch.save(Auto_Encoder.state_dict(), './AutoEncoder_Reconstruction.pth')
+        #torch.save(Auto_Encoder.state_dict(), './AutoEncoder_Reconstruction.pth')
+        best_network = Auto_Encoder # Record the best_network with lowest validation error
 
 # Let's test how good is our trained Auto Encoder
 for data in test_data:
@@ -109,7 +111,8 @@ for data in test_data:
     input_test = input_test.to(device)
 
     # forward
-    latent_test, output_test = Auto_Encoder(input_test)
+    #latent_test, output_test = Auto_Encoder(input_test)
+    latent_test, output_test = best_network(input_test)
     cost_test = cost_function(input_test, output_test)
 
     print("test loss: {:.4f}".format(cost_test.data))
@@ -178,6 +181,7 @@ optimizer_2D = torch.optim.Adam(Auto_Encoder_2D.parameters())
 # Train Session (Maybe we can apply Early Stopping)
 num_epoch = 20
 validation_criterion = 1
+best_network_2D = None
 
 for epoch in range(num_epoch):
     for data in train_data:
@@ -207,9 +211,10 @@ for epoch in range(num_epoch):
 
     print("epoch [{}/{}], validation loss (2D): {:.4f}".format(epoch+1, num_epoch, cost_valid_2D.data))
 
-    if cost_valid_2D < validation_criterion:
+    if cost_valid_2D <= validation_criterion:
         validation_criterion = cost_valid_2D
-        torch.save(Auto_Encoder_2D.state_dict(), './AutoEncoder_Reconstruction_2D.pth')
+        #torch.save(Auto_Encoder_2D.state_dict(), './AutoEncoder_Reconstruction_2D.pth')
+        best_network_2D = Auto_Encoder_2D
 
 # Test Session
 for data in test_data:
@@ -218,7 +223,8 @@ for data in test_data:
     input_test_2D = input_test_2D.to(device)
 
     # forward
-    latent_test_2D, output_test_2D = Auto_Encoder_2D(input_test_2D)
+    #latent_test_2D, output_test_2D = Auto_Encoder_2D(input_test_2D)
+    latent_test_2D, output_test_2D = best_network_2D(input_test_2D)
     cost_test_2D = cost_function_2D(input_test_2D, output_test_2D)
 
     print("test loss (2D): {:.4f}".format(cost_test_2D.data))
