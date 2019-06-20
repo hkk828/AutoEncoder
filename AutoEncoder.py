@@ -68,7 +68,7 @@ optimizer = torch.optim.Adam(Auto_Encoder.parameters()) # Adam finds its own lea
 # Train our Auto Encoder
 num_epoch = 20  # 1 epoch = uses all data points once
 validation_criterion = 1 # criterion for validation (It will be updated to have less cost through the training)
-best_network = None
+best_network = None # model with the best validation loss will be stored
 
 for epoch in range(num_epoch):
     for data in train_data:
