@@ -30,7 +30,7 @@ from torch import nn
 input_size = 28 * 28
 output_size = 10
 
-# Refer FC
+# Fully Connected
 class MyNetwork(nn.Module):
     def __init__(self):
         super(MyNetwork, self).__init__()
@@ -109,7 +109,7 @@ best_network = None
 for epoch in range(num_epoch):
     for data in train_data:
         input_train, label_train = data
-        #input_train = input_train.view(input_train.size(0), -1)
+        #input_train = input_train.view(input_train.size(0), -1) # This is needed only for Fully Connected model
         input_train = input_train.to(device)
 
         result_train = classifier(input_train)
